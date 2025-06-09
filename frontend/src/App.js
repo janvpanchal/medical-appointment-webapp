@@ -1,104 +1,209 @@
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
-import SignIn from './components/SignIn'
-import OtpVerification from './components/OtpVerification'
-import PatientDashboard from './components/PatientDashboard'
-import DoctorDashboard from './components/DoctorDashboard'
+import React, { useState } from "react";
 
-export default function App() {
-  const [step, setStep] = useState('signin')
-  const [phone, setPhone] = useState('')
-  const [otp, setOtp] = useState('')
-  const [user, setUser ] = useState(null)
-  const [doctors, setDoctors] = useState([])
-  const [doctorId, setDoctorId] = useState('')
-  const [date, setDate] = useState('')
-  const [appointments, setAppointments] = useState([])
+const Header = ({ onLogout, userEmail }) => (
+  <header className="header">
+    <div className="container">
+      <div className="logo">MedApp</div>
+      <nav>
+        {userEmail ? (
+          <>
+            <span className="user-email">{userEmail}</span>
+            <button className="btn-logout" onClick={onLogout}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <span className="nav-guest">Please Sign In</span>
+        )}
+      </nav>
+    </div>
+  </header>
+);
 
-  const API_BASE = 'http://localhost:5000/api'
+const SignIn = ({ onEmailSubmit }) => {
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState(null);
 
-  async function sendOtp() {
-    if (!/^\d{10,15}$/.test(phone)) return alert('Enter valid phone number')
-    try {
-      await axios.post(`${API_BASE}/auth/send-otp`, { phone })
-      setStep('otp')
-    } catch {
-      alert('Error sending OTP')
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError(null);
+    if (!email.match(/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/)) {
+      setError("Please enter a valid email address.");
+      return;
     }
-  }
-
-  async function verifyOtp() {
-    if (otp !== '123456') return alert('Enter correct OTP (123456)')
-    try {
-      const res = await axios.post(`${API_BASE}/auth/verify-otp`, { phone, otp })
-      setUser (res.data)
-      setStep(res.data.role === 'patient' ? 'patient' : 'doctor')
-    } catch {
-      alert('OTP verification failed')
-    }
-  }
-
-  useEffect(() => {
-    if (step === 'patient') {
-      axios.get(`${API_BASE}/doctors`)
-        .then(res => setDoctors(res.data))
-        .catch(() => alert('Failed to load doctors'))
-    }
-  }, [step])
-
-  useEffect(() => {
-    if ((step === 'patient' || step === 'doctor') && user) {
-      axios.get(`${API_BASE}/appointments/${user.userId}`)
-        .then(res => setAppointments(res.data))
-        .catch(() => alert('Failed to load appointments'))
-    }
-  }, [step, user])
-
-  async function bookAppointment(e) {
-    e.preventDefault()
-    if (!doctorId || !date) return alert('Select doctor and date/time')
-    try {
-      await axios.post(`${API_BASE}/appointments`, {
-        userId: user.userId,
-        doctorId,
-        date,
-      })
-      setDate('')
-      setDoctorId('')
-      const res = await axios.get(`${API_BASE}/appointments/${user.userId}`)
-      setAppointments(res.data)
-    } catch {
-      alert('Failed to book appointment')
-    }
-  }
-
-  function logout() {
-    setUser (null)
-    setPhone('')
-    setOtp('')
-    setAppointments([])
-    setDoctors([])
-    setStep('signin')
-  }
+    onEmailSubmit(email);
+  };
 
   return (
-    <div className="min-h-screen bg-white text-gray-700 font-sans max-w-4xl mx-auto p-6">
-      <header className="sticky top-0 bg-white border-b border-gray-200 flex justify-between items-center py-4 px-6">
-        <h1 className="font-semibold text-3xl">MedBook</h1>
-        {user ? (
-          <button
-            onClick={logout}
-            className="bg-black text-white px-4 py-2 rounded-md font-semibold hover:bg-gray-800 transition"
-          >
-            Sign Out
-          </button>
-        ) : null}
-      </header>
+    <section className="card section">
+      <h1 className="heading-lg">Sign In</h1>
+      <form onSubmit={handleSubmit} className="form">
+        <label htmlFor="email" className="label">
+          Email address
+        </label>
+        <input
+          id="email"
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value.trim())}
+          required
+          className="input"
+        />
+        {error && <div className="form-error">{error}</div>}
+        <button type="submit" className="btn-primary">
+          Send OTP
+        </button>
+      </form>
+    </section>
+  );
+};
 
-      {step === 'signin' && <SignIn phone={phone} setPhone={setPhone} sendOtp={sendOtp} />}
-      {step === 'otp' && <OtpVerification phone={phone} otp={otp} setOtp={setOtp} verifyOtp={verifyOtp} />}
-      {step === 'patient' && <PatientDashboard doctors={doctors} doctorId={doctorId} setDoctorId={setDoctorId} date={date} setDate={setDate} bookAppointment={bookAppointment} appointments={appointments} />}
-      {step === 'doctor' && <DoctorDashboard appointments={appointments} />}
-    </div>
-  )
-}
+const OtpVerification = ({ email, onVerifyOtp, onBack }) => {
+  const [otp, setOtp] = useState("");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    if (!otp.match(/^\d{6}$/)) {
+      setError("OTP must be a 6-digit number.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await onVerifyOtp(otp);
+    } catch (err) {
+      setError(err.message || "OTP verification failed");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <section className="card section">
+      <h1 className="heading-lg">Verify OTP</h1>
+      <p className="text-muted mb-6">An OTP was sent to {email}</p>
+      <form onSubmit={handleSubmit} className="form">
+        <label htmlFor="otp" className="label">
+          Enter OTP
+        </label>
+        <input
+          id="otp"
+          type="text"
+          placeholder="123456"
+          inputMode="numeric"
+          maxLength={6}
+          value={otp}
+          onChange={(e) => setOtp(e.target.value)}
+          required
+          className="input"
+        />
+        {error && <div className="form-error">{error}</div>}
+        <div className="form-btns">
+          <button type="button" onClick={onBack} className="btn-ghost">
+            Back
+          </button>
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? "Verifying..." : "Verify OTP"}
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+};
+
+const AppointmentBooking = ({ token, onBooked }) => {
+  const [doctor, setDoctor] = useState("");
+  const [dateTime, setDateTime] = useState("");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const doctors = [
+    "Dr. Smith",
+    "Dr. Johnson",
+    "Dr. Lee",
+    "Dr. Patel",
+    "Dr. Wang",
+  ];
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    if (!doctor) {
+      setError("Please select a doctor.");
+      return;
+    }
+    if (!dateTime) {
+      setError("Please select date and time.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/appointments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ doctor, dateTime }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to book appointment");
+      }
+      setDoctor("");
+      setDateTime("");
+      onBooked();
+    } catch (err) {
+      setError(err.message);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <section className="card section">
+      <h1 className="heading-lg mb-4">Book Appointment</h1>
+      <form onSubmit={handleSubmit} className="form">
+        <label htmlFor="doctor" className="label">
+          Select Doctor
+        </label>
+        <select
+          id="doctor"
+          value={doctor}
+          onChange={(e) => setDoctor(e.target.value)}
+          required
+          className="input"
+        >
+          <option value="">Choose a doctor</option>
+          {doctors.map((d) => (
+            <option key={d} value={d}>
+              {d}
+            </option>
+          ))}
+        </select>
+
+        <label htmlFor="dateTime" className="label mt-4">
+          Appointment Date & Time
+        </label>
+        <input
+          type="datetime-local"
+          id="dateTime"
+          value={dateTime}
+          onChange={(e) => setDateTime(e.target.value)}
+          required
+          min={new Date().toISOString().slice(0, 16)}
+          className="input"
+        />
+
+        {error && <div className="form-error">{error}</div>}
+
+        <button type="submit" className="btn-primary" disabled={loading}>
+          {loading ? "Booking..." : "Book Appointment"}
+        </button>
+      </form>
+    </section>
+  );
+};
+
+export { Header, SignIn, OtpVerification, AppointmentBooking };

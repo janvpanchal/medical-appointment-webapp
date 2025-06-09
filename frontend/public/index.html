@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MedBook - Medical Appointment Booking</title>
+  <style>
+    /* Root variables */
+    :root {
+      --color-bg: #ffffff;
+      --color-primary: #000000;
+      --color-text: #6b7280;
+      --radius: 0.75rem;
+      --max-width: 1200px;
+      --font-headline: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      --font-body: 'Arial', sans-serif;
+      --transition-duration: 0.3s;
+    }
+
+    /* Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background-color: var(--color-bg);
+      font-family: var(--font-body);
+      color: var(--color-text);
+      font-size: 18px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+    a:hover, a:focus {
+      text-decoration: underline;
+    }
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    /* Layout Container */
+    .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      background: var(--color-bg);
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      z-index: 1000;
+    }
+    .logo {
+      font-family: var(--font-headline);
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--color-primary);
+      user-select: none;
+    }
+    nav {
+      display: flex;
+      gap: 2rem;
+    }
+    nav a, nav button {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--color-primary);
+      padding: 0.25rem 0.5rem;
+      transition: color var(--transition-duration);
+      background: none;
+      border: none;
+    }
+    nav a:hover, nav a:focus, nav button:hover, nav button:focus {
+      color: #2563eb;
+      outline: none;
+    }
+
+    /* Hero Section */
+    .hero {
+      padding-top: 4rem;
+      padding-bottom: 5rem;
+      text-align: center;
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero h1 {
+      font-family: var(--font-headline);
+      font-weight: 800;
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      color: var(--color-primary);
+    }
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--color-text);
+      margin-bottom: 3rem;
+    }
+    .hero button {
+      background-color: var(--color-primary);
+      color: #fff;
+      border-radius: var(--radius);
+      font-weight: 700;
+      font-size: 1.25rem;
+      padding: 1rem 3rem;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+      transition: background-color var(--transition-duration), box-shadow var(--transition-duration);
+      border: none;
+    }
+    .hero button:hover,
+    .hero button:focus {
+      background-color: #1e40af;
+      box-shadow: 0 10px 20px rgba(30,64,175,0.3);
+      outline: none;
+    }
+
+    /* Sections & Cards */
+    section {
+      margin-top: 4rem;
+      margin-bottom: 5rem;
+    }
+    .card {
+      background: var(--color-bg);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      padding: 2rem;
+    }
+
+    /* Buttons */
+    .btn {
+      background-color: var(--color-primary);
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 1rem;
+      border: none;
+      transition: background-color var(--transition-duration);
+    }
+    .btn:hover, .btn:focus {
+      background-color: #1e40af;
+      outline: none;
+    }
+
+    /* Forms */
+    form {
+      max-width: 480px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--color-primary);
+    }
+    input, select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      font-family: var(--font-body);
+      border-radius: var(--radius);
+      border: 1.5px solid #d1d5db;
+      background-color: #f9fafb;
+      margin-bottom: 1.5rem;
+      transition: border-color var(--transition-duration);
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+      background-color: white;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      color: var(--color-text);
+      font-size: 0.9rem;
+      padding: 2rem 0;
+      user-select: none;
+    }
+
+  </style>
+</head>
+<body>
+  <header class="container" role="banner">
+    <div class="logo" tabindex="0">MedBook</div>
+    <nav role="navigation" aria-label="Primary">
+      <button id="btnGetStarted" aria-label="Get Started Button">Get Started</button>
+    </nav>
+  </header>
+  <main>
+    <section class="hero" role="main">
+      <h1 tabindex="0">Book your Medical Appointments Effortlessly</h1>
+      <p tabindex="0">Sign in with your phone, book with trusted doctors, and manage appointments easily.</p>
+      <button id="mainCta" class="btn" aria-label="Get Started">Get Started</button>
+    </section>
+  </main>
+  <footer>
+    &copy; 2024 MedBook. All rights reserved.
+  </footer>
+  <script>
+    // Minimal interaction for demo: Scroll or alert for CTA
+    document.getElementById('mainCta').addEventListener('click', () => {
+      alert('Please run the React frontend app to use the full Medical Appointment Booking System.');
+    });
+    document.getElementById('btnGetStarted').addEventListener('click', () => {
+      alert('Please run the React frontend app to use the full Medical Appointment Booking System.');
+    });
+  </script>
+</body>
+</html>
